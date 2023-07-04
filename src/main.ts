@@ -13,73 +13,76 @@ import { Content, TextLevel } from "./types";
 const acceptedElements = ["h1", "h2", "h3", "h4", "h5", "h6", "p"];
 
 export class TuEditor {
-  private editorEl: HTMLDivElement;
+  private editorEl?: HTMLDivElement;
 
-  private onChange: (content: Content) => void;
+  private onChange?: (content: Content) => void;
 
-  constructor(onChange: (content: Content) => void) {
+  public init(onChange: (content: Content) => void) {
     this.editorEl = document.querySelector("#tu-editor")!;
     this.editorEl.contentEditable = "true";
     this.editorEl.role = "textbox";
     this.onChange = onChange;
-    this.editorEl.addEventListener("keydown", this.listenerEditor);
+    this.editorEl.addEventListener("keydown", (e) => this.listenerEditor(e));
     this.editorEl.addEventListener("input", console.log);
     this.editorEl.addEventListener("blur", () => this._parseContent());
   }
-
-  /**
-   * 
- In most browsers, you need the Range and Selection objects. You specify each of the selection boundaries as a node and an offset within that node. For example, to set the caret to the fifth character of the second line of text, you'd do the following:
-
-function setCaret() {
-    var el = document.getElementById("editable")
-    var range = document.createRange()
-    var sel = window.getSelection()
-    
-    range.setStart(el.childNodes[2], 5)
-    range.collapse(true)
-    
-    sel.removeAllRanges()
-    sel.addRange(range)
-}
-   */
 
   private listenerEditor(e: KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       const key = createId();
       const el = document.createElement("p");
-      el.innerHTML = "<br />";
+
       el.dataset.key = key;
-      window
-        .getSelection()
-        ?.anchorNode?.parentElement?.insertAdjacentElement("afterend", el);
+      const sel = window.getSelection();
+
+      let activeElement = sel?.anchorNode;
+      if (acceptedElements instanceof Node) {
+        activeElement = activeElement?.parentElement;
+      }
+      // find next to editor div parent
+      while (activeElement?.parentElement?.id !== "tu-editor") {
+        activeElement = activeElement?.parentElement;
+      }
+
+      if (activeElement instanceof HTMLElement) {
+        activeElement.insertAdjacentElement("afterend", el);
+
+        // Set cursor in the new element
+        const range = document.createRange();
+        range.setStart(el, 0);
+        range.collapse(true);
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        el.innerHTML = "<br> ";
+      }
     }
   }
 
   private _parseContent() {
-    const elements = Array.from(this.editorEl.children);
-    console.log(elements);
+    if (this.editorEl?.children) {
+      const elements = Array.from(this.editorEl?.children);
 
-    const newContent: Content = [];
+      const newContent: Content = [];
 
-    for (const el of elements) {
-      const key = el.getAttribute("data-key") ?? "";
-      const innerHtml = el.innerHTML ?? "";
+      for (const el of elements) {
+        const key = el.getAttribute("data-key") ?? "";
+        const innerHtml = el.innerHTML ?? "";
 
-      const type = this.getBlockType(el.localName);
-      if (type === "text") {
-        newContent.push({
-          key,
-          type,
-          data: {
-            level: (el.localName as TextLevel) ?? "p",
-            text: innerHtml,
-          },
-        });
+        const type = this.getBlockType(el.localName);
+        if (type === "text") {
+          newContent.push({
+            key,
+            type,
+            data: {
+              level: (el.localName as TextLevel) ?? "p",
+              text: innerHtml,
+            },
+          });
+        }
       }
+      if (this.onChange) this.onChange(newContent);
     }
-    this.onChange(newContent);
   }
 
   private getBlockType(localName: string | undefined) {
@@ -104,7 +107,7 @@ function setCaret() {
     const el = document.createElement(element);
     el.innerHTML = innerHTML;
     el.dataset.key = key;
-    this.editorEl.appendChild(el);
+    this.editorEl?.appendChild(el);
   }
 
   public execCommand(e: Event, command: "bold" | "italic") {
@@ -114,7 +117,8 @@ function setCaret() {
   }
 }
 
-const editor = new TuEditor(console.log);
+const editor = new TuEditor();
+editor.init(console.log);
 
 editor.setContent([
   { key: "start", data: { text: "Tittel", level: "h1" }, type: "text" },
@@ -143,9 +147,5 @@ const button = document.querySelector<HTMLButtonElement>("#paste");
 button?.addEventListener("click", (e) => editor.execCommand(e, "bold"));
 
 export function createId() {
-  const appendix = Math.ceil(Math.random() * 1000000).toString(36);
-
-  const time = new Date().getTime();
-
-  return time.toString(36) + "-" + appendix;
+  return Math.ceil(Math.random() * 99999990).toString(36);
 }
