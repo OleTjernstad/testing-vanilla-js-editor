@@ -2,14 +2,6 @@ import "./style.css";
 
 import { Content, TextLevel } from "./types";
 
-// setupEditor(document.querySelector<HTMLButtonElement>("#tu-editor")!);
-
-// const button = document.querySelector<HTMLButtonElement>("#paste");
-
-// button?.addEventListener("click", () =>
-//   pasteHtmlAtCaret("<strong>Inserted</strong>")
-// );
-
 const acceptedElements = ["h1", "h2", "h3", "h4", "h5", "h6", "p"];
 
 export class TuEditor {
@@ -92,6 +84,27 @@ export class TuEditor {
   }
 
   public setContent(content: Content) {
+    console.log({ content });
+    if (content.length === 0) {
+      const key = createId();
+      const el = document.createElement("p");
+
+      el.dataset.key = key;
+      const sel = window.getSelection();
+
+      this.editorEl?.appendChild(el);
+
+      // Set cursor in the new element
+      const range = document.createRange();
+      range.setStart(el, 0);
+      range.collapse(true);
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      el.innerHTML = "<br> ";
+
+      return;
+    }
+
     for (const block of content) {
       if (block.type === "text") {
         this._initElement(
@@ -121,25 +134,25 @@ const editor = new TuEditor();
 editor.init(console.log);
 
 editor.setContent([
-  { key: "start", data: { text: "Tittel", level: "h1" }, type: "text" },
-  {
-    key: "ljhkqn56-eor4",
-    data: { level: "p", text: "dsdss\nsdoknsbjnlsjrnl" },
-    type: "text",
-  },
-  {
-    key: "ljhlofvj-aonf",
-    data: { level: "p", text: "sdfbsg <b>lkwner</b> jkfmnslkj" },
-    type: "text",
-  },
-  {
-    key: "ljhloml0-jmc8",
-    data: {
-      level: "p",
-      text: "fvvfsfsfsfsfgbdhøjsbf oubhsfvub oaueb ueby isuefbvsi ufvbhs diufhb qeui sefv",
-    },
-    type: "text",
-  },
+  // { key: "start", data: { text: "Tittel", level: "h1" }, type: "text" },
+  // {
+  //   key: "ljhkqn56-eor4",
+  //   data: { level: "p", text: "dsdss\nsdoknsbjnlsjrnl" },
+  //   type: "text",
+  // },
+  // {
+  //   key: "ljhlofvj-aonf",
+  //   data: { level: "p", text: "sdfbsg <b>lkwner</b> jkfmnslkj" },
+  //   type: "text",
+  // },
+  // {
+  //   key: "ljhloml0-jmc8",
+  //   data: {
+  //     level: "p",
+  //     text: "fvvfsfsfsfsfgbdhøjsbf oubhsfvub oaueb ueby isuefbvsi ufvbhs diufhb qeui sefv",
+  //   },
+  //   type: "text",
+  // },
 ]);
 
 const button = document.querySelector<HTMLButtonElement>("#paste");
