@@ -87,20 +87,8 @@ export class TuEditor {
     console.log({ content });
     if (content.length === 0) {
       const key = createId();
-      const el = document.createElement("p");
 
-      el.dataset.key = key;
-      const sel = window.getSelection();
-
-      this.editorEl?.appendChild(el);
-
-      // Set cursor in the new element
-      const range = document.createRange();
-      range.setStart(el, 0);
-      range.collapse(true);
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-      el.innerHTML = "<br> ";
+      this._initElement("p", "<br>", key);
 
       return;
     }
@@ -118,9 +106,17 @@ export class TuEditor {
 
   private _initElement(element: string, innerHTML: string, key: string) {
     const el = document.createElement(element);
-    el.innerHTML = innerHTML;
+    const sel = window.getSelection();
     el.dataset.key = key;
     this.editorEl?.appendChild(el);
+
+    // Set cursor in the new element
+    const range = document.createRange();
+    range.setStart(el, 0);
+    range.collapse(true);
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    el.innerHTML = innerHTML;
   }
 
   public execCommand(e: Event, command: "bold" | "italic") {
@@ -134,25 +130,25 @@ const editor = new TuEditor();
 editor.init(console.log);
 
 editor.setContent([
-  // { key: "start", data: { text: "Tittel", level: "h1" }, type: "text" },
-  // {
-  //   key: "ljhkqn56-eor4",
-  //   data: { level: "p", text: "dsdss\nsdoknsbjnlsjrnl" },
-  //   type: "text",
-  // },
-  // {
-  //   key: "ljhlofvj-aonf",
-  //   data: { level: "p", text: "sdfbsg <b>lkwner</b> jkfmnslkj" },
-  //   type: "text",
-  // },
-  // {
-  //   key: "ljhloml0-jmc8",
-  //   data: {
-  //     level: "p",
-  //     text: "fvvfsfsfsfsfgbdhøjsbf oubhsfvub oaueb ueby isuefbvsi ufvbhs diufhb qeui sefv",
-  //   },
-  //   type: "text",
-  // },
+  { key: "start", data: { text: "Tittel", level: "h1" }, type: "text" },
+  {
+    key: "ljhkqn56-eor4",
+    data: { level: "p", text: "dsdss\nsdoknsbjnlsjrnl" },
+    type: "text",
+  },
+  {
+    key: "ljhlofvj-aonf",
+    data: { level: "p", text: "sdfbsg <b>lkwner</b> jkfmnslkj" },
+    type: "text",
+  },
+  {
+    key: "ljhloml0-jmc8",
+    data: {
+      level: "p",
+      text: "fvvfsfsfsfsfgbdhøjsbf oubhsfvub oaueb ueby isuefbvsi ufvbhs diufhb qeui sefv",
+    },
+    type: "text",
+  },
 ]);
 
 const button = document.querySelector<HTMLButtonElement>("#paste");
