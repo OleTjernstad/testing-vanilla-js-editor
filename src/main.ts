@@ -1,8 +1,7 @@
 import "./style.css";
 
-import { Content, TextLevel } from "./types";
-
-const acceptedElements = ["h1", "h2", "h3", "h4", "h5", "h6", "p"];
+import { Content } from "./types";
+import { parseContent } from "./parseContent";
 
 export class TuEditor {
   private editorEl?: HTMLDivElement;
@@ -16,7 +15,7 @@ export class TuEditor {
     this.onChange = onChange;
     this.editorEl.addEventListener("keydown", (e) => this.listenerEditor(e));
     this.editorEl.addEventListener("input", console.log);
-    this.editorEl.addEventListener("blur", () => this._parseContent());
+    this.editorEl.addEventListener("blur", () => this._onBlurListener());
   }
 
   private listenerEditor(e: KeyboardEvent) {
@@ -29,7 +28,7 @@ export class TuEditor {
       const sel = window.getSelection();
 
       let activeElement = sel?.anchorNode;
-      if (acceptedElements instanceof Node) {
+      if (activeElement instanceof Node) {
         activeElement = activeElement?.parentElement;
       }
       // find next to editor div parent
@@ -55,35 +54,12 @@ export class TuEditor {
     }
   }
 
-  private _parseContent() {
+  private _onBlurListener() {
     if (this.editorEl?.children) {
       const elements = Array.from(this.editorEl?.children);
+      const newContent = parseContent(elements);
 
-      const newContent: Content = [];
-
-      for (const el of elements) {
-        const key = el.getAttribute("data-key") ?? "";
-        const innerHtml = el.innerHTML ?? "";
-
-        const type = this.getBlockType(el.localName);
-        if (type === "text") {
-          newContent.push({
-            key,
-            type,
-            data: {
-              level: (el.localName as TextLevel) ?? "p",
-              text: innerHtml,
-            },
-          });
-        }
-      }
       if (this.onChange) this.onChange(newContent);
-    }
-  }
-
-  private getBlockType(localName: string | undefined) {
-    if (acceptedElements.includes(localName ?? "p")) {
-      return "text";
     }
   }
 
