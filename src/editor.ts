@@ -67,6 +67,5 @@ export class TuEditor {
   public execCommand(e: Event, command: "bold" | "italic") {
     e.preventDefault();
     document.execCommand(command);
-    console.log(e);
   }
 }
