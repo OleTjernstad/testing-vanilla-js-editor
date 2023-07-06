@@ -36,7 +36,6 @@ export class TuEditor {
   }
 
   public setContent(content: Content) {
-    console.log({ content });
     if (content.length === 0) {
       const key = createId();
 
